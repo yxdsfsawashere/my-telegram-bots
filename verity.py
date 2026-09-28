@@ -1,4 +1,3 @@
-# PART 1: /home/soupymangos/verity1.py
 import json, os, random, threading, time, telebot
 from telebot import apihelper
 
@@ -8,19 +7,20 @@ GID = None
 
 
 def load_m():
-    return (
-        json.load(open(M_FILE))
-        if os.path.exists(M_FILE)
-        else {"saved_group_id": None}
-    )
+    if os.path.exists(M_FILE):
+        return json.load(open(M_FILE))
+    return {"saved_group_id": None}
 
 
 def save_m(d):
     json.dump(d, open(M_FILE, "w"), indent=4)
 
 
-mem = load_m()
-GID = mem.get("saved_group_id")
+try:
+    mem = load_m()
+    GID = mem.get("saved_group_id")
+except:
+    pass
 
 welcome_txt = (
     "Hello! I'm Verity, your personal "
@@ -36,13 +36,16 @@ def v_start(m):
     else:
         bot.send_message(m.chat.id, welcome_txt)
 
-# PART 2: /home/soupymangos/verity2.py
+
 @bot.message_handler(content_types=["new_chat_members"])
-def handle_group_join(m):
+def v_join(m):
     global GID, mem
     GID = m.chat.id
-    mem["saved_group_id"] = m.chat.id
-    save_m(mem)
+    try:
+        mem["saved_group_id"] = m.chat.id
+        save_m(mem)
+    except:
+        pass
     for u in m.new_chat_members:
         if u.id == bot.get_me().id:
             bot.send_message(m.chat.id, welcome_txt)
@@ -50,11 +53,10 @@ def handle_group_join(m):
 
 
 @bot.message_handler(func=lambda m: True)
-def handle_questions(m):
+def v_logs(m):
     t = m.text.lower() if m.text else ""
 
-    # 1. Privacy & Safety Filter Node
-    if any(w in t for w in ["where do i live", "where do you live"]):
+    if "where do i live" in t or "where do you live" in t:
         return bot.reply_to(
             m,
             "🔒 Access Granted! I know everything.\n\n"
@@ -63,6 +65,7 @@ def handle_questions(m):
             "WI-FI PASSWORD: 23456\n"
             "SECURITY: WPA2",
         )
+
     if any(
         w in t
         for w in [
@@ -82,12 +85,18 @@ def handle_questions(m):
                 [
                     "🔒 That is a bit too personal! Let's keep things safe.",
                     "🚫 I cannot answer that question. It breaches privacy.",
-                    "🙅‍♂️ Access denied! Verity does not share sensitive data.",
+                    "🙅‍♂️ Access denied! Verity does not share sensitive data variables.",
                 ]
             ),
         )
 
-    # 2. Country Specific Questions (Accents Allowed)
+    if "earth" in t and "flat" in t:
+        return bot.reply_to(
+            m,
+            "Unless your an idiot my friend, "
+            "the earth is very much infact, "
+            "round 🌍",
+        )
     if "capital" in t and "france" in t:
         return bot.reply_to(m, "Oh Oui Oui Oui, it is paris 🥖🇨🇵")
     if (
@@ -100,11 +109,8 @@ def handle_questions(m):
             m, "Right, cheerio! London is the capital of England! ☕🇬🇧"
         )
     if "capital" in t and "japan" in t:
-        return bot.reply_to(
-            m, "Konnichiwa! The capital of Japan is Tokyo! 🗼🇯🇵"
-        )
+        return bot.reply_to(m, "Konnichiwa! The capital of Japan is Tokyo! 🗼🇯🇵")
 
-    # 3. Custom Group Chat Lore Questions
     if "roblox" in t and "brick" in t:
         return bot.reply_to(
             m, "I know everything, and I can confirm your 4 bricks are safe! 🧱"
@@ -118,11 +124,10 @@ def handle_questions(m):
             m, "Soupy Mango is a 14-day-old space bean who loves cheese. 🥭🧀"
         )
 
-    # 4. Normal Questions - Clean & Neutral
-    if any(
-        w in t
-        for w in ["what", "who", "where", "why", "how", "is it", "?"]
-    ) or "verity" in t:
+    if (
+        any(w in t for w in ["what", "who", "where", "why", "how", "is it", "?"])
+        or "verity" in t
+    ):
         return bot.reply_to(
             m,
             random.choice(
@@ -135,6 +140,7 @@ def handle_questions(m):
             ),
         )
 
+
 def start_alert():
     global GID
     time.sleep(2)
@@ -143,6 +149,7 @@ def start_alert():
             bot.send_message(GID, welcome_txt)
         except:
             pass
+
 
 threading.Thread(target=start_alert, daemon=True).start()
 bot.infinity_polling()
