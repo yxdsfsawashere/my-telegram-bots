@@ -2,7 +2,8 @@ import asyncio, time, os, random
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, MessageHandler, filters, CallbackQueryHandler, ContextTypes
 
-TOKEN = os.getenv("TELLER_BOT_TOKEN")
+# Wired directly with your provided token string
+TOKEN = "8924063665:AAFgHgip7nD9Z_Gg7tKa390yAvaYIXKQ2RE"
 S = {}  # Game sessions storage
 
 def get_s(cid):
